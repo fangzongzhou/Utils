@@ -14,12 +14,14 @@ import java.nio.file.attribute.BasicFileAttributes;
  */
 public class FileUtils {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         //removeFile("F:\\rm.txt");
         //traverseFileFromDir("F:\\");
 //        traverseAllFileFromDir("F:\\");
 //        creatMutilDirectory("F:\\LZ\\xx\\dd");
-        creatFile("F:\\LZ\\xx\\dd\\1.txt");
+//        creatFile("F:\\LZ\\xx\\dd\\1.txt");
+//        asdf("F:\\LZ\\xx\\dd\\1.txt");
+        fileMonitor("F:\\LZ\\xx\\dd");
     }
 
     /*
@@ -74,7 +76,7 @@ public class FileUtils {
     * 创建多级目录
     * */
     public static void creatMutilDirectory(String mutilDirectory) {
-        Path dir=Paths.get(mutilDirectory);
+        Path dir = Paths.get(mutilDirectory);
         try {
             Files.createDirectories(dir);
         } catch (IOException e) {
@@ -102,12 +104,11 @@ public class FileUtils {
         Path src = Paths.get(sourceFilePath);
         Path target = Paths.get(targetFilePath);
         try {
-            Files.copy(src,target,StandardCopyOption.REPLACE_EXISTING);//文件存在则替换
+            Files.copy(src, target, StandardCopyOption.REPLACE_EXISTING);//文件存在则替换
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
 
     /*
@@ -117,7 +118,7 @@ public class FileUtils {
     public static void readByLine(String filePath) {
         Path src = Paths.get(filePath);
         try {
-            BufferedReader bufferedReader=Files.newBufferedReader(src, StandardCharsets.UTF_8);
+            BufferedReader bufferedReader = Files.newBufferedReader(src, StandardCharsets.UTF_8);
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 System.out.println(line);
@@ -130,7 +131,7 @@ public class FileUtils {
     /*
     * 文件写入字符串
     * */
-    public static void appandCharacter(String filePath){
+    public static void appandCharacter(String filePath) {
         Path src = Paths.get(filePath);
         try {
             BufferedWriter bufferedWriter = Files.newBufferedWriter(src, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
@@ -139,6 +140,50 @@ public class FileUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /*
+    * 字符串读取
+    * */
+    public static void asdf(String filePath) {
+
+        Path src = Paths.get(filePath);
+        try {
+            for (String line : Files.readAllLines(src)) {
+                System.out.println(line);
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void fileMonitor(String filePath) throws InterruptedException {
+        Path dir = Paths.get(filePath);
+        try {
+            WatchService service = FileSystems.getDefault().newWatchService();
+            WatchKey key = dir.register(service, StandardWatchEventKinds.ENTRY_MODIFY
+                    , StandardWatchEventKinds.ENTRY_DELETE
+                    , StandardWatchEventKinds.ENTRY_CREATE);
+            while (true) {
+                key = service.take();
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
+                        System.out.println("该目录下文件被修改了");
+                    } else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+                        System.out.println("该目录下文件被删除了");
+                    } else if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+
+                        System.out.println("该目录下有文件北新创建了");
+                    }
+                }
+                key.reset();
+                System.out.println("============================================>>>>>>>>>>>>>>>>>>>");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }
